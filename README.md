@@ -1,1 +1,2 @@
-# school-opencv
+# opencv
+# pytest

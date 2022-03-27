@@ -1,5 +1,5 @@
 def funA(calc_tax):
-    minus=88000+120000 #208,000
+    minus=120000+200000 #320000 單身+標準扣除額+薪資所得特別扣除額
     calc_tax=calc_tax-minus 
     total=0
     if(calc_tax<=540000):
@@ -15,16 +15,16 @@ def funA(calc_tax):
     return total
 
 def test_answer():
-    assert funA(500000)==14600 #292,000
+    assert funA(500000)==9000
 
 def test_answer1():
-    assert funA(800000)==33240 #592,000
+    assert funA(800000)==24000 
 
 def test_answer2():
-    assert funA(5000000)==1087200 #4,792,000
+    assert funA(5000000)==1042400
 
 def test_answer3():
-    assert funA(2120000)==247800 #1,912,000
+    assert funA(2120000)==225400
 
 def test_answer4():
-    assert funA(3330000)==560000 #3,122,000
+    assert funA(3330000)==526400

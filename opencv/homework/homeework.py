@@ -2,38 +2,67 @@ import sys
 import cv2 as cv
 import numpy as np
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow,QAction,QMenu
+from PyQt5.QtWidgets import QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout
+from PyQt5.QtGui import QImage, QPixmap
 
 class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
         super().__init__(parent)
         self.setWindowTitle("test")
         self.resize(1000,800)
-        self._createMenuBar()
+        self.intUI()
+        self._createActions() 
+        self._createMenuBar() #選單分類
+        self._connectActions()
 
-    def _createMenuBar(self): #選單
+    def intUI(self):
+        self.label = QLabel()
+        layout = QGridLayout(self)
+        layout.addWidget(self.label, 0, 0, 4, 4)
+
+    def _createActions(self):#選單基礎設定
+        self.OpenImageAction=QAction(self)
+        self.OpenImageAction.setText("&Open_Image")
+        self.ROIAction=QAction("&ROI",self)
+        self.IeHmAction=QAction("&Image histogram",self)
+        self.CrSeAction=QAction("&Color space",self)
+        self.CrSuAction=QAction("&Color spaceMenu",self)
+        self.ThgAction=QAction("&Thresholding",self)
+        self.HmEnAction=QAction("&Histogram Equalization",self)
+
+    def _createMenuBar(self):
         menuBar=self.menuBar()
-        fileMenu=menuBar.addMenu('File')
-        OpenImageMenu=QMenu("&OpenImage",self)
-        fileMenu.addMenu(OpenImageMenu)
+        fileMenu=QMenu("&File",self)
+        menuBar.addMenu(fileMenu)
+        fileMenu.addAction(self.OpenImageAction)
 
         SettingMenu=menuBar.addMenu("&Setting")
-        ROIMenu=QMenu("&ROI",self)
-        SettingMenu.addMenu(ROIMenu)
-        IHAMenu=QMenu("&Image histogram",self)
-        SettingMenu.addMenu(IHAMenu)
-        Image_histogramMenu=QMenu("&Color space",self)
-        SettingMenu.addMenu(Image_histogramMenu)
+        SettingMenu.addAction(self.ROIAction)
+        SettingMenu.addAction(self.IeHmAction)
+        SettingMenu.addAction(self.CrSeAction)
 
         ImageMenu=menuBar.addMenu("&Image Processing")
-        Color_spaceMenu=QMenu("&Color spaceMenu",self)
-        ImageMenu.addMenu(Color_spaceMenu)
-        ThresholdingMenu=QMenu("&Thresholding",self)
-        ImageMenu.addMenu(ThresholdingMenu)
-        Histogram_EqualizationMenu=QMenu("&Histogram Equalization",self)
-        ImageMenu.addMenu(Histogram_EqualizationMenu)
+        ImageMenu.addAction(self.CrSuAction)
+        ImageMenu.addAction(self.ThgAction)
+        ImageMenu.addAction(self.HmEnAction)
 
-    def open_image(self):
+    def _connectActions(self):#按鍵觸發
+        self.OpenImageAction.triggered.connect(self.openSlot)
+
+    def openSlot(self):
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
+        if filename is '':
+            return
+        self.img = cv.imread(filename, -1)
+        if self.img.size == 1:
+            return
+        self.showImage()
+
+    def showImage(self):
+        height, width, channel = self.img.shape
+        bytesPerline = 3 * width
+        self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.label.setPixmap(QPixmap.fromImage(self.qImg))
         
 
 if __name__=="__main__":

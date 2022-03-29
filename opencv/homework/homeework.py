@@ -7,7 +7,7 @@ from PyQt5.QtGui import QImage, QPixmap
 from paramiko import Channel
 from sklearn.feature_selection import SelectFpr
 
-class Window(QMainWindow,QDialog):
+class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
         super().__init__(parent)
         self.setWindowTitle("test")
@@ -18,9 +18,11 @@ class Window(QMainWindow,QDialog):
         self._connectActions()
 
     def intUI(self):
-        self.label = QLabel()
+        self.picturelabel = QLabel('picture',self)
+        self.picturelabel.move(100,100)
         layout = QGridLayout(self)
-        layout.addWidget(self.label, 0, 0, 4, 4)
+        layout.geometry(150,30,800,600)
+        layout.addWidget(self.picturelabel, 0, 0, 4, 4)
 
     def _createActions(self):#選單基礎設定
         self.OpenImageAction=QAction(self)
@@ -64,7 +66,7 @@ class Window(QMainWindow,QDialog):
         height, width, Channel = self.img.shape
         bytesPerline = 3 * width
         self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.label.setPixmap(QPixmap.fromImage(self.qImg))
+        self.picturelabel.setPixmap(QPixmap.fromImage(self.qImg))
         
 
 if __name__=="__main__":

@@ -40,7 +40,7 @@ class Window(QMainWindow):
 
         SettingMenu=menuBar.addMenu("&Setting")#母選單
         SettingMenu.addAction(self.ROIAction)
-        IeHmActionMenu=SettingMenu.addMenu(self.IeHmAction)#子選單
+        IeHmActionMenu=SettingMenu.addMenu("&IeHmAction")#子選單
         IeHmActionMenu.addAction("gray")
         IeHmActionMenu.addAction("hsv")     
 

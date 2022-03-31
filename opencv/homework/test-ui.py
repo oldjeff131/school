@@ -1,7 +1,7 @@
 import sys
 import cv2 as cv
 import numpy as np
-from PyQt5.QtCore import Qt,QRect
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout,QDialog,QMenuBar
 from PyQt5.QtGui import QImage, QPixmap
 from paramiko import Channel
@@ -21,7 +21,6 @@ class Window(QMainWindow):
         self.picturelabel = QLabel('picture',self)
         self.picturelabel.move(100,100)
         layout = QGridLayout(self)
-        self.picturelabel.setGeometry(QRect(0, 0, 800, 600))
         layout.addWidget(self.picturelabel, 0, 0, 4, 4)
 
     def _createActions(self):#選單基礎設定

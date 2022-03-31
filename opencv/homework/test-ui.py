@@ -1,11 +1,9 @@
 import sys
 import cv2 as cv
 import numpy as np
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout,QDialog,QMenuBar
+from PyQt5.QtCore import QRect
+from PyQt5.QtWidgets import QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout
 from PyQt5.QtGui import QImage, QPixmap
-from paramiko import Channel
-from sklearn.feature_selection import SelectFpr
 
 class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
@@ -20,6 +18,7 @@ class Window(QMainWindow):
     def intUI(self):
         self.picturelabel = QLabel('picture',self)
         self.picturelabel.move(100,100)
+        self.picturelabel.setGeometry(QRect(0, 0, 600, 400))
         layout = QGridLayout(self)
         layout.addWidget(self.picturelabel, 0, 0, 4, 4)
 
@@ -39,10 +38,11 @@ class Window(QMainWindow):
         menuBar.addMenu(fileMenu)
         fileMenu.addAction(self.OpenImageAction)
 
-        SettingMenu=menuBar.addMenu("&Setting")
+        SettingMenu=menuBar.addMenu("&Setting")#母選單
         SettingMenu.addAction(self.ROIAction)
-        SettingMenu.addAction(self.IeHmAction)
-        SettingMenu.addAction(self.CrSeAction)
+        IeHmActionMenu=SettingMenu.addMenu(self.IeHmAction)#子選單
+        IeHmActionMenu.addAction("gray")
+        IeHmActionMenu.addAction("hsv")     
 
         ImageMenu=menuBar.addMenu("&Image Processing")
         ImageMenu.addAction(self.CrSuAction)

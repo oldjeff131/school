@@ -14,11 +14,11 @@ import numpy as np
 cap = cv.VideoCapture(0)
 while True:
     #取得camera的連續影像
-ret, frame = cap.read()
+    ret, frame = cap.read()
     #將靜態的frame轉換成灰階影像
-gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     #顯示原始影像與灰階影像
-cv.imshow('frame', frame)
+    cv.imshow('frame', frame)
     frame50 = frame + 50;
     cv.imshow('frame + 50', frame50)
     # cv.imshow('gray image', gray)

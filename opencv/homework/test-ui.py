@@ -19,6 +19,9 @@ class Window(QMainWindow):
         self.picturelabel = QLabel('picture',self)
         self.picturelabel.move(100,100)
         self.picturelabel.setGeometry(QRect(0, 0, 600, 400))
+        self.picturelabe2 = QLabel('gary',self)
+        self.picturelabe2.move(100,100)
+        self.picturelabe2.setGeometry(QRect(600, 0, 600, 400))
         layout = QGridLayout(self)
         layout.addWidget(self.picturelabel, 0, 0, 4, 4)
 
@@ -27,8 +30,8 @@ class Window(QMainWindow):
         self.OpenImageAction.setText("&Open_Image")
         self.ROIAction=QAction("&ROI",self)
         self.IeHmAction=QAction("&Image histogram",self)
-        self.CrSeAction=QAction("&Color space",self)
-        self.CrSuAction=QAction("&Color spaceMenu",self)
+        self.grayAction=QAction("&gray",self)
+        self.hsvAction=QAction("&hsv",self)
         self.ThgAction=QAction("&Thresholding",self)
         self.HmEnAction=QAction("&Histogram Equalization",self)
 
@@ -45,12 +48,13 @@ class Window(QMainWindow):
         IeHmActionMenu.addAction("hsv")     
 
         ImageMenu=menuBar.addMenu("&Image Processing")
-        ImageMenu.addAction(self.CrSuAction)
         ImageMenu.addAction(self.ThgAction)
         ImageMenu.addAction(self.HmEnAction)
 
     def _connectActions(self):#按鍵觸發
         self.OpenImageAction.triggered.connect(self.openSlot)
+        self.ROIAction.triggered.connect(self.Roucontrol)
+        self.grayAction.triggered.connect(self.graycontrol)
 
     def openSlot(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
@@ -67,6 +71,26 @@ class Window(QMainWindow):
         self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
         self.picturelabel.setPixmap(QPixmap.fromImage(self.qImg))
         
+    def Roucontrol(self):
+        img = cv.imread(self.picturelabel)
+        roi = cv.selectROI(windowName="roi", img=img, showCrosshair=False, fromCenter=False)
+        x, y, w, h = roi
+        cv.rectangle(img=img, pt1=(x, y), pt2=(x + w, y + h), color=(0, 0, 255), thickness=2)
+        img_roi = img[int(y):int(y+h), int(x):int(x+w)]
+        cv.imshow("roi", img)
+        cv.imshow("roi_sel", img_roi)
+        cv.waitKey(0)
+
+    def graycontrol(self):
+        gray = cv.cvtColor(self.img, cv.COLOR_BGR2GRAY)
+        height, width = gray.shape
+        bytesPerline = 1 * width
+        self.qimg = QImage(gray, width, height, bytesPerline, QImage.Format_Grayscale8).rgbSwapped()
+        self.picturelabel.setPixmap(QPixmap.fromImage(self.qimg))
+        self.picturelabe2.resize(self.qimg.size())
+
+    # def hsvcontrol(self):
+
 
 if __name__=="__main__":
     app=QApplication(sys.argv)

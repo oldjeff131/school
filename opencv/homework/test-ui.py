@@ -19,7 +19,6 @@ class Window(QMainWindow):
         self._createMenuBar() #選單分類
         self._connectActions()
 
-
     def intUI(self):#設定介面ui
         self.picturelabel = QLabel('picture',self)
         self.picturelabel.move(100,100)

@@ -52,12 +52,33 @@ class Window(QMainWindow):
         self.ThgAction=QAction("&Thresholding",self)
         self.HmEnAction=QAction("&Histogram Equalization",self)
         self.InfoAction=QAction("&Info",self)
+        self.HTAction=QAction("&Horizontal Transfer",self)
+        self.FVAction=QAction("&Flip Vertically",self)
+        self.FLAction=QAction("&Flip Left",self)
+        self.FRAction=QAction("&Flip Right",self)
+        self.ATAction=QAction("&Affine Transform",self)
+        self.FRAction=QAction("&Flip Right",self)
+        self.FRAction=QAction("&Flip Right",self)
+        self.FRAction=QAction("&Flip Right",self)
+        self.FRAction=QAction("&Flip Right",self)
 
     def _createMenuBar(self): #選單設定
         menuBar=self.menuBar()
         fileMenu=QMenu("&File",self)
         menuBar.addMenu(fileMenu)
         fileMenu.addAction(self.OpenImageAction)
+
+        GTActionMenu=menuBar.addMenu("&Geometric_Transformation")#母選單
+        GTActionMenu.addAction(self.ROIAction)
+        GTActionMenu.addAction(self.IeHmAction)
+        RotateActionMenu=GTActionMenu.addMenu("&Rotate")#旋轉選單
+        RotateActionMenu.addAction(self.HTAction)#水平
+        RotateActionMenu.addAction(self.FVAction)#垂直
+        RotateActionMenu.addAction(self.FLAction)#翻轉90度
+        RotateActionMenu.addAction(self.FRAction)#翻轉270度
+        # IeHmActionMenu=SettingMenu.addMenu("&IeHmAction")#子選單
+        # IeHmActionMenu.addAction(self.grayAction)
+        # IeHmActionMenu.addAction(self.hsvAction)
 
         SettingMenu=menuBar.addMenu("&Setting")#母選單
         SettingMenu.addAction(self.ROIAction)
@@ -156,6 +177,11 @@ class Window(QMainWindow):
             self.sld.setValue(value)
         self.sldvaluelabel.setText(str(value))
         self.Thresholdingcontrol()
+
+    def pictureinfo(self):
+        a=1
+    
+
 
 if __name__=="__main__":
     app=QApplication(sys.argv)

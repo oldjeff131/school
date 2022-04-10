@@ -179,7 +179,7 @@ class Window(QMainWindow):
         self.Thresholdingcontrol()
 
     def pictureinfo(self):
-        a=1
+        a=1100
     
 
 

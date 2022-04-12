@@ -1,12 +1,14 @@
 from fileinput import filename
 import sys
+import PyQt5
 import cv2 as cv
 from cv2 import QT_CHECKBOX
 import numpy as np
 from matplotlib import pyplot as plt
-from PyQt5.QtCore import QRect,Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout,QSlider
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtCore import *#QRect,Qt
+from PyQt5.QtWidgets import * #QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout,QSlider,QMessageBox
+from PyQt5.QtGui import *#QImage, QPixmap
+from pyrsistent import PTypeError
 from scipy.misc import electrocardiogram
 
 class Window(QMainWindow):
@@ -25,7 +27,7 @@ class Window(QMainWindow):
         self.picturelabel.setGeometry(QRect(0, 0, 600, 400))
         self.picturelabe2 = QLabel('gary',self)
         self.picturelabe2.move(100,100)
-        self.picturelabe2.setGeometry(QRect(600,60, 600, 400))
+        self.picturelabe2.setGeometry(QRect(300,100, 600, 400))
         self.picturelabe3 = QLabel('test',self)
         self.picturelabe3.move(100,100)
         self.picturelabe3.setGeometry(QRect(0, 350, 600, 400))
@@ -36,7 +38,15 @@ class Window(QMainWindow):
         self.sld.setTickPosition(QSlider.TicksRight)
         self.sldvaluelabel=QLabel("0",self)
         self.sldvaluelabel.move(100,100)
-        self.sldvaluelabel.setGeometry(QRect(50, 700, 50, 50))
+        self.sldvaluelabel.setGeometry(QRect(25, 600, 50, 50))
+        self.sld1=QSlider(Qt.Horizontal,self)
+        self.sld1.setGeometry(250,600,200,50)
+        self.sld1.setMinimum(-360)
+        self.sld1.setMaximum(360)
+        self.sld1.setTickPosition(QSlider.TicksRight)
+        self.sldvaluelabel1=QLabel("0",self)
+        self.sldvaluelabel1.move(100,100)
+        self.sldvaluelabel1.setGeometry(QRect(225, 600, 50, 50))
         layout = QGridLayout(self)
         layout.addWidget(self.picturelabel, 0, 0, 4, 4)
         layout.addWidget(self.picturelabe2, 0, 0, 4, 4)
@@ -44,52 +54,61 @@ class Window(QMainWindow):
 
     def _createActions(self):#選單基礎設定
         self.OpenImageAction=QAction(self)
-        self.OpenImageAction.setText("&Open_Image")
+        self.OpenImageAction.setText("&開啟圖片\n(Open_Image)")
         self.ROIAction=QAction("&ROI",self)
-        self.IeHmAction=QAction("&Image histogram",self)
-        self.grayAction=QAction("&gray",self)
-        self.hsvAction=QAction("&hsv",self)
+        self.IeHmAction=QAction("&圖片直方圖(Image histogram)",self)
+        self.grayAction=QAction("&Gray",self)
+        self.hsvAction=QAction("&Hsv",self)
+        self.rgbAction=QAction("&Rgb",self)
+        self.bgrAction=QAction("&Bgr",self)
         self.ThgAction=QAction("&Thresholding",self)
         self.HmEnAction=QAction("&Histogram Equalization",self)
-        self.InfoAction=QAction("&Info",self)
-        self.HTAction=QAction("&Horizontal Transfer",self)
-        self.FVAction=QAction("&Flip Vertically",self)
-        self.FLAction=QAction("&Flip Left",self)
-        self.FRAction=QAction("&Flip Right",self)
-        self.ATAction=QAction("&Affine Transform",self)
-        self.FRAction=QAction("&Flip Right",self)
-        self.FRAction=QAction("&Flip Right",self)
-        self.FRAction=QAction("&Flip Right",self)
-        self.FRAction=QAction("&Flip Right",self)
+        self.InfoAction=QAction("&影像資訊(Info)",self)
+        self.FHAction=QAction("&垂直翻轉(Horizontal)",self)
+        self.FVAction=QAction("&水平翻轉(Vertically)",self)
+        self.FLAction=QAction("&向左翻轉(Left)",self)
+        self.FRAction=QAction("&向右翻轉(Right)",self)
+        self.ATAction=QAction("&訪射轉換(Affine)",self)
+        self.MFAction=QAction("&均值濾波(Mean Filtering)",self)
+        self.GFAction=QAction("&高斯濾波(Gaussian Filtering)",self)
+        self.MBAction=QAction("&中值濾波(MedianBlur)",self)
+        self.BFAction=QAction("&雙邊濾波(Bilateral filter)",self)
+        self.ReloadAction=QAction("&重新載入(Reload)",self)
+        self.TLAction=QAction("&平移(TransLation)",self)
 
     def _createMenuBar(self): #選單設定
         menuBar=self.menuBar()
-        fileMenu=QMenu("&File",self)
+        fileMenu=QMenu("&檔案(File)",self)
         menuBar.addMenu(fileMenu)
         fileMenu.addAction(self.OpenImageAction)
+        fileMenu.addAction(self.ReloadAction)
+        fileMenu.addAction(self.InfoAction)
 
-        GTActionMenu=menuBar.addMenu("&Geometric_Transformation")#母選單
-        GTActionMenu.addAction(self.ROIAction)
-        GTActionMenu.addAction(self.IeHmAction)
-        RotateActionMenu=GTActionMenu.addMenu("&Rotate")#旋轉選單
-        RotateActionMenu.addAction(self.HTAction)#水平
+        SettingMenu=menuBar.addMenu("&設定(Setting)")#母選單
+        SettingMenu.addAction(self.ROIAction)
+        SettingMenu.addAction(self.IeHmAction)
+        IeHmActionMenu=SettingMenu.addMenu("&色彩空間(IeHmAction)")#子選單
+        IeHmActionMenu.addAction(self.grayAction)
+        IeHmActionMenu.addAction(self.hsvAction)
+        IeHmActionMenu.addAction(self.bgrAction)
+        IeHmActionMenu.addAction(self.rgbAction)
+        RotateActionMenu=SettingMenu.addMenu("&旋轉(Rotate)")#旋轉選單
+        RotateActionMenu.addAction(self.FHAction)#水平
         RotateActionMenu.addAction(self.FVAction)#垂直
         RotateActionMenu.addAction(self.FLAction)#翻轉90度
         RotateActionMenu.addAction(self.FRAction)#翻轉270度
-        # IeHmActionMenu=SettingMenu.addMenu("&IeHmAction")#子選單
-        # IeHmActionMenu.addAction(self.grayAction)
-        # IeHmActionMenu.addAction(self.hsvAction)
-
-        SettingMenu=menuBar.addMenu("&Setting")#母選單
-        SettingMenu.addAction(self.ROIAction)
-        SettingMenu.addAction(self.IeHmAction)
-        IeHmActionMenu=SettingMenu.addMenu("&IeHmAction")#子選單
-        IeHmActionMenu.addAction(self.grayAction)
-        IeHmActionMenu.addAction(self.hsvAction)     
+        SettingMenu.addAction(self.TLAction)#平移
+        SettingMenu.addAction(self.ATAction)#訪射轉換
+     
 
         ImageMenu=menuBar.addMenu("&Image Processing")
         ImageMenu.addAction(self.ThgAction)
         ImageMenu.addAction(self.HmEnAction)
+        FilteringActionMenu=ImageMenu.addMenu("&濾波(Filtering)")#濾波
+        FilteringActionMenu.addAction(self.MFAction)#均值濾波
+        FilteringActionMenu.addAction(self.GFAction)#高斯濾波
+        FilteringActionMenu.addAction(self.MBAction)#中值濾波
+        FilteringActionMenu.addAction(self.BFAction)#雙邊濾波
 
     def _connectActions(self):#按鍵觸發
         self.OpenImageAction.triggered.connect(self.openSlot)
@@ -100,6 +119,16 @@ class Window(QMainWindow):
         self.ThgAction.triggered.connect(self.Thresholdingcontrol)
         self.HmEnAction.triggered.connect(self.Histogram_Equalization_control)
         self.sld.valueChanged[int].connect(self.changeValue)
+        self.sld1.valueChanged[int].connect(self.changeRotaValue)
+        self.FHAction.triggered.connect(self.pictureFHflip)
+        self.FVAction.triggered.connect(self.pictureFVflip)
+        self.FRAction.triggered.connect(self.pictureFRflip)
+        self.FLAction.triggered.connect(self.pictureFRflip)
+        self.ReloadAction.triggered.connect(self.showImage)
+        self.TLAction.triggered.connect(self.PictureTranslation)
+        self.InfoAction.triggered.connect(self.pictureinfo)
+        self.rgbAction.triggered.connect(self.Rgb_control)
+        self.bgrAction.triggered.connect(self.Bgr_control)
 
     def openSlot(self): #載入的圖片
         filename, _ = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
@@ -140,6 +169,22 @@ class Window(QMainWindow):
         self.qImg = QImage(gray, width, height, bytesPerline, QImage.Format_Grayscale8).rgbSwapped()
         self.picturelabe2.setPixmap(QPixmap.fromImage(self.qImg))
         self.picturelabe2.resize(self.qImg.size())
+    
+    def Rgb_control(self): #Rgb
+        rgb = cv.cvtColor(self.img, cv.COLOR_BGR2RGB)
+        height, width, channel = rgb.shape
+        bytesPerline = 3 * width
+        self.qImg = QImage(rgb, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe2.setPixmap(QPixmap.fromImage(self.qImg))
+        self.picturelabe2.resize(self.qImg.size())
+
+    def Bgr_control(self): #Bgr
+        bgr = cv.cvtColor(self.img, cv.COLOR_RGB2BGR)
+        height, width, channel = bgr.shape
+        bytesPerline = 3 * width
+        self.qImg = QImage(bgr, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe2.setPixmap(QPixmap.fromImage(self.qImg))
+        self.picturelabe2.resize(self.qImg.size())
 
     def Hsv_control(self): #Hsv
         hsv = cv.cvtColor(self.img, cv.COLOR_BGR2HSV)
@@ -178,10 +223,74 @@ class Window(QMainWindow):
         self.sldvaluelabel.setText(str(value))
         self.Thresholdingcontrol()
 
-    def pictureinfo(self):
-        a=1100
-    
+    def changeRotaValue(self,value):
+        sender=self.sender()
+        if sender==self.sld:
+            self.sld1.setValue(value)
+        else:
+            self.sld1.setValue(value)
+        self.sldvaluelabel1.setText(str(value))
+        self.PictureRotaControl()
 
+    def pictureinfo(self):
+        img = cv.imread(self.img_path)
+        size=img.shape
+        QMessageBox.information(self,"Picture_info",str(size)+"\n(高度,寬度,像素)")
+
+    def PictureRotaControl(self):#角度調整
+        self.sldvaluelabel1.setText(str(self.sld1.value()))
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        center = (width // 2, height // 2)
+        Pictureflip=cv.getRotationMatrix2D(center,self.sld1.value(),1.0)
+        Pictureflip = cv.warpAffine(img, Pictureflip, (width, height))
+        bytesPerline = 3 * width
+        Pictureflip = QImage(Pictureflip.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabel.setPixmap(QPixmap.fromImage(Pictureflip))
+
+    def pictureFHflip(self): #垂直翻轉
+        img = cv.imread(self.img_path)
+        Pictureflip = cv.flip(img, 0)
+        height, width, channel = img.shape
+        bytesPerline = 3 * width
+        Pictureflip = QImage(Pictureflip.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabel.setPixmap(QPixmap.fromImage(Pictureflip))
+
+    def pictureFVflip(self): #水平翻轉
+        img = cv.imread(self.img_path)
+        Pictureflip = cv.flip(img, 1)
+        height, width, channel = img.shape
+        bytesPerline = 3 * width
+        Pictureflip = QImage(Pictureflip.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabel.setPixmap(QPixmap.fromImage(Pictureflip))
+
+    def pictureFLflip(self): #左翻翻轉
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        center = (width // 2, height // 2)
+        Pictureflip=cv.getRotationMatrix2D(center,-90,1.0)
+        Pictureflip = cv.warpAffine(img, Pictureflip, (width, height))
+        bytesPerline = 3 * width
+        Pictureflip = QImage(Pictureflip.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabel.setPixmap(QPixmap.fromImage(Pictureflip))
+         
+    def pictureFRflip(self): #右翻翻轉
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        center = (width // 2, height // 2)
+        Pictureflip = cv.getRotationMatrix2D(center,90,1.0)
+        Pictureflip = cv.warpAffine(img, Pictureflip, (width, height))
+        bytesPerline = 3 * width
+        Pictureflip = QImage(Pictureflip.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabel.setPixmap(QPixmap.fromImage(Pictureflip))
+
+    def PictureTranslation(self):
+        img = cv.imread(self.img_path)
+        rows, cols = img.shape[:2]
+        affine = np.float32([[1, 0, tx], [0, 1, ty]])
+        dst = cv.warpAffine(img, affine, (cols, rows))
+        cv.imshow("原始影像", img)
+        cv.imshow("影像平移", dst)
 
 if __name__=="__main__":
     app=QApplication(sys.argv)

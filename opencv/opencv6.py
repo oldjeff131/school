@@ -136,20 +136,20 @@ def affine(img):
     cv.imshow('affine image', img_aff)
 
 #     return gaussian_out , noise# 讀取影像
-img_ori = cv.imread('image/opencvlogo.png')
-# image filtering
-# my_first_filter(img_ori)
+img_ori = cv.imread('opencv\cameraman.png')
+#image filtering
+#my_first_filter(img_ori)
 # averaging_filter(img_ori)
 # gaussian_filter(img_ori)
 # median_filter(img_ori)
 # sobel_filter(img_ori)
 # laplacian_filter(img_ori)
 # add_gaussian_noise(img_ori)
-# unsharp_mask(img_ori)
-# bilateral_filter(img_ori)
-# image gremotric transofmation
-# resize(img_ori)
-# translate(img_ori)
-# rotate(img_ori)
+unsharp_mask(img_ori)
+bilateral_filter(img_ori)
+#image gremotric transofmation
+resize(img_ori)
+translate(img_ori)
+rotate(img_ori)
 affine(img_ori)
 cv.waitKey()

@@ -111,8 +111,16 @@ class Window(QMainWindow):
         self.BFAction=QAction("&雙邊濾波(Bilateral filter)",self)
         self.LPFAction=QAction("&低通濾波(Low-Pass Filter)",self)
         self.HPFAction=QAction("&高通濾波(High-Pass Filter)",self)
+        self.AGNFAction=QAction("&增加高斯噪點(Add gaussian noise)",self)
+        self.SFAction=QAction("&索伯算子(Sobel filter)",self)
+        self.LFAction=QAction("&拉普拉斯算子(Laplacian filter)",self)
+        self.AFAction=QAction("&平均濾波器(Averaging filter)",self)
         self.ReloadAction=QAction("&重新載入(Reload)",self)
         self.TLAction=QAction("&平移(TransLation)",self)
+        self.EDIction=QAction("&邊緣檢測(Edge Detection Image)",self)
+        self.EIction=QAction("&影像浮雕(Emboss Image)",self)
+        self.RIction=QAction("&Result Image",self)
+        self.CSction=QAction("&改變大小",self)
 
     def _createMenuBar(self): #選單設定
         menuBar=self.menuBar()
@@ -137,18 +145,26 @@ class Window(QMainWindow):
         RotateActionMenu.addAction(self.FRAction)#翻轉270度
         SettingMenu.addAction(self.TLAction)#平移
         SettingMenu.addAction(self.ATAction)#訪射轉換
+        SettingMenu.addAction(self.CSction)
      
 
         ImageMenu=menuBar.addMenu("&Image Processing")
         ImageMenu.addAction(self.ThgAction)
         ImageMenu.addAction(self.HmEnAction)
-        FilteringActionMenu=ImageMenu.addMenu("&濾波(Filtering)")#濾波
+        FilteringActionMenu=ImageMenu.addMenu("&濾波(Filtering)")
         FilteringActionMenu.addAction(self.LPFAction)
         FilteringActionMenu.addAction(self.HPFAction)
-        FilteringActionMenu.addAction(self.MFAction)#均值濾波
-        FilteringActionMenu.addAction(self.GFAction)#高斯濾波
-        FilteringActionMenu.addAction(self.MBAction)#中值濾波
-        FilteringActionMenu.addAction(self.BFAction)#雙邊濾波
+        FilteringActionMenu.addAction(self.MFAction)
+        FilteringActionMenu.addAction(self.GFAction)
+        FilteringActionMenu.addAction(self.MBAction)
+        FilteringActionMenu.addAction(self.BFAction)
+        FilteringActionMenu.addAction(self.AGNFAction)
+        FilteringActionMenu.addAction(self.SFAction)
+        FilteringActionMenu.addAction(self.LFAction)
+        FilteringActionMenu.addAction(self.AFAction)
+        FilteringActionMenu.addAction(self.EIction)
+        FilteringActionMenu.addAction(self.EDIction)
+        FilteringActionMenu.addAction(self.RIction)
 
     def _connectActions(self):#按鍵觸發
         self.OpenImageAction.triggered.connect(self.openSlot)
@@ -175,6 +191,13 @@ class Window(QMainWindow):
         self.GFAction.triggered.connect(self.Gaussia_Filtering)
         self.MBAction.triggered.connect(self.MedianBlur)
         self.BFAction.triggered.connect(self.Bilateral_filter)
+        self.AGNFAction.triggered.connect(self.add_gaussian_noise)
+        self.SFAction.triggered.connect(self.sobel_filter)
+        self.LFAction.triggered.connect(self.laplacian_filter)
+        self.AFAction.triggered.connect(self.averaging_filter)
+        self.EIction.triggered.connect(self.Emboss_Image)
+        self.EDIction.triggered.connect(self.Edge_Detection_Image)
+        self.CSction.triggered.connect(self.changesize) 
 
     def openSlot(self): #載入的圖片
         filename, _ = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
@@ -337,54 +360,117 @@ class Window(QMainWindow):
         dst = cv.warpAffine(img, affine, (cols, rows))
         cv.imshow("original", img)
         cv.imshow("Translation", dst)
-
+    
     def Low_Pass_Filter(self):
         img = cv.imread(self.img_path)
-        height, width, channel = img.shape
-        bytesPerline = 3 * width
-        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+        #self.showpicturea(g_hpf,img)
 
     def High_Pass_Filter(self):
-        kernel_3x3=np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]])
-        kernel_5x5=np.array([[-1,-1,-1,-1,-1],[-1,1,2,1,-1],[-1,2,4,2,-1],[-1,1,2,1,-1],[-1,-1,-1,-1,-1]])
         img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
-        k3=ndimage.convolve(img,kernel_3x3)
-        k5=ndimage.convolve(img,kernel_5x5)
-        cv.imshow("kernel 3x3",k3)
-        cv.imshow("kernel 5x5",k5)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        GBlur=cv.GaussianBlur(img_gray,(5,5),0)
+        g_hpf=img_gray-GBlur
+        self.showpicturea(g_hpf,img)
 
     def Mean_Filtering(self):#均值濾波 blur() boxFilter()
-        img = cv.imread(self.img_path)
-        height, width, channel = img.shape
-        img_Mean=cv.blur(img,(5,5))
-        bytesPerline = 3 * width
-        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img_Mean=cv.blur(img_gray,(5,5))
+        self.showpicturea(img_Mean,img)
         
     def Gaussia_Filtering(self):#高斯濾波
-        img = cv.imread(self.img_path)
-        height, width, channel = img.shape
-        img_Gaussia=cv.GaussianBlur(img,(5,5),5)
-        bytesPerline = 3 * width
-        img_Gaussia = QImage(img_Gaussia.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Gaussia))
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img_Gaussia=cv.GaussianBlur(img_gray,(11,11),-1)
+        self.showpicturea(img_Gaussia,img)
     
     def MedianBlur(self):#中值濾波
-        img = cv.imread(self.img_path)
-        height, width, channel = img.shape
-        bytesPerline = 3 * width
-        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img_median = cv.medianBlur(img_gray, 7)
+        self.showpicturea(img_median,img)
     
     def Bilateral_filter(self):
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img_Gaussia=cv.GaussianBlur(img_gray,(5,5),9)
+        img_Bilateral=cv.bilateralFilter(img_Gaussia,10,10,10)
+        self.showpicturea(img_Bilateral,img)
+
+    def add_gaussian_noise(self):#增加高斯噪點
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img = img / 255
+        mean = 0
+        sigma = 0.2
+        noise = np.random.normal(mean, sigma, img.shape)
+        img_gaussian = img + noise
+        img_gaussian = np.clip(img_gaussian, 0, 1)
+        img_gaussian = np.uint8(img_gaussian * 255)
+        noise = np.uint8(noise * 255)
+        cv.imshow('Gaussian noise', noise)
+        cv.imshow('noised image', img_gaussian)
+        #median_filter(img_gaussian)
+        img_result = cv.fastNlMeansDenoising(img_gaussian, None, 10, 10, 7)
+        cv.imshow('fast denoise', img_result)
+
+    def Emboss_Image(self): #影像浮雕
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        kernel = np.array([[-2, -1, 0],[-1, 1, 1],[0, 1, 2]])
+        img_result = cv.filter2D(img_gray, -1, kernel)
+        self.showpicturea(img_result,img)
+
+    def Edge_Detection_Image(self): #邊緣檢測
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        kernel = np.array([[-1, -1, -1],[-1, 8, -1],[-1, -1, -1]])
+        img_result = cv.filter2D(img_gray, -1, kernel)
+        self.showpicturea(img_result,img)
+
+    def Result_Image(self):
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        kernel = np.ones((7, 7), np.float32) / 49
+        img_result = cv.filter2D(img_gray, -1, kernel)
+        self.showpicturea(img_result,img)
+
+    def sobel_filter(self):#索伯算子
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        x = cv.Sobel(img_gray, cv.CV_16S, 1, 0)
+        y = cv.Sobel(img_gray, cv.CV_16S, 0, 1)
+        abs_x = cv.convertScaleAbs(x)
+        abs_y = cv.convertScaleAbs(y)
+        img_sobel = cv.addWeighted(abs_x, 0.5, abs_y, 0.5, 0)
+        cv.imshow('x-direction gradient image', abs_x)
+        cv.imshow('y-direction gradient image', abs_y)
+        cv.imshow('sobel image', img_sobel)
+
+    def averaging_filter(self):#平均濾波器
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img_averaging = cv.blur(img_gray, (5, 5))
+        self.showpicturea(img_averaging,img)
+
+    def laplacian_filter(self):#拉普拉斯算子
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        gray_lap = cv.Laplacian(img_gray, cv.CV_16S, ksize=5)
+        img_laplacian = cv.convertScaleAbs(gray_lap)
+        self.showpicturea(img_laplacian,img)
+
+    def showpicturea(self,img,or_img):
+        height, width, channel = or_img.shape
+        bytesPerline = 1 * width
+        img = QImage(img.data, width, height, bytesPerline, QImage.Format_Grayscale8).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img))
+
+    def changesize(self):
         img = cv.imread(self.img_path)
-        height, width, channel = img.shape
-        img_Gaussia=cv.GaussianBlur(img,(5,5),9)
-        img_Bilateral=cv.bilateralFilter(img_Gaussia,50,50,50)
-        bytesPerline = 3 * width
-        img_Bilateral = QImage(img_Bilateral.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Bilateral))
+        rows, cols, ch = img.shape
+        img_res = cv.resize(img, None, fx=(float(self.Txtextbox.text())), fy=(float(self.Tytextbox.text())), interpolation=cv.INTER_CUBIC)
+        cv.imshow('resize image', img_res)
     
 if __name__=="__main__":
     app=QApplication(sys.argv)

@@ -1,10 +1,11 @@
 from fileinput import filename
 import sys
 import PyQt5
+import click
 import cv2 as cv
 from cv2 import QT_CHECKBOX
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import image, pyplot as plt
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import *
@@ -12,6 +13,11 @@ from pyrsistent import PTypeError
 from scipy.misc import electrocardiogram
 from scipy import ndimage
 
+refPT=[] 
+cropping = False
+refPTx=[0,0,0,0]
+refPTy=[0,0,0,0]
+num=0
 class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
         super().__init__(parent)
@@ -21,6 +27,7 @@ class Window(QMainWindow):
         self._createActions() 
         self._createMenuBar() #選單分類
         self._connectActions()
+        global refPTx,refPTy,num
 
     def intUI(self):#設定介面ui
         self.picturelabel = QLabel('picture',self)
@@ -61,27 +68,59 @@ class Window(QMainWindow):
 
         self.Txvaluelabel1=QLabel("Tx:",self)
         self.Txvaluelabel1.move(20, 20)
-        self.Txvaluelabel1.setGeometry(QRect(280, 670, 50, 25))
+        self.Txvaluelabel1.setGeometry(QRect(220, 670, 50, 25))
 
         self.Txtextbox = QLineEdit(self)
         self.Txtextbox.move(20, 20)
-        self.Txtextbox.setGeometry(300,670,50,25)
+        self.Txtextbox.setGeometry(250,670,50,25)
 
         self.Tyvaluelabel1=QLabel("Ty:",self)
         self.Tyvaluelabel1.move(20, 20)
-        self.Tyvaluelabel1.setGeometry(QRect(280, 700, 50, 25))
+        self.Tyvaluelabel1.setGeometry(QRect(220, 700, 50, 25))
 
         self.Tytextbox = QLineEdit(self)
         self.Tytextbox.move(20, 20)
-        self.Tytextbox.setGeometry(300,700,50,25)
+        self.Tytextbox.setGeometry(250,700,50,25)
 
         self.Sizevaluelabel1=QLabel("圖片縮放:",self)
         self.Sizevaluelabel1.move(20, 20)
         self.Sizevaluelabel1.setGeometry(QRect(25, 700, 50, 25))
 
-        self.Sizetextbox = QLineEdit(self)
-        self.Sizetextbox.move(20, 20)
-        self.Sizetextbox.setGeometry(90,700,50,25)
+        self.Sizextextbox = QLineEdit(self)
+        self.Sizextextbox.move(20, 20)
+        self.Sizextextbox.setGeometry(90,700,50,25)
+
+        self.Sizeytextbox = QLineEdit(self)
+        self.Sizeytextbox.move(20, 20)
+        self.Sizeytextbox.setGeometry(150,700,50,25)
+
+        self.affineluelabel1=QLabel("仿射位子\n上X下Y",self)
+        self.affineluelabel1.move(20, 20)
+        self.affineluelabel1.setGeometry(QRect(350, 670, 100, 50))
+
+        self.affinex1textbox = QLineEdit(self)
+        self.affinex1textbox.move(20, 20)
+        self.affinex1textbox.setGeometry(400,670,50,25)
+
+        self.affiney1textbox = QLineEdit(self)
+        self.affiney1textbox.move(20, 20)
+        self.affiney1textbox.setGeometry(400,700,50,25)
+
+        self.affinex2textbox = QLineEdit(self)
+        self.affinex2textbox.move(20, 20)
+        self.affinex2textbox.setGeometry(460,670,50,25)
+
+        self.affiney2textbox = QLineEdit(self)
+        self.affiney2textbox.move(20, 20)
+        self.affiney2textbox.setGeometry(460,700,50,25)
+
+        self.affinex3textbox = QLineEdit(self)
+        self.affinex3textbox.move(20, 20)
+        self.affinex3textbox.setGeometry(520,670,50,25)
+
+        self.affiney3textbox = QLineEdit(self)
+        self.affiney3textbox.move(20, 20)
+        self.affiney3textbox.setGeometry(520,700,50,25)
 
         layout = QGridLayout(self)
         layout.addWidget(self.picturelabel, 0, 0, 4, 4)
@@ -95,7 +134,7 @@ class Window(QMainWindow):
         self.IeHmAction=QAction("&圖片直方圖(Image histogram)",self)
         self.grayAction=QAction("&Gray",self)
         self.hsvAction=QAction("&Hsv",self)
-        self.rgbAction=QAction("&Rgb",self)
+        #self.rgbAction=QAction("&Rgb",self)
         self.bgrAction=QAction("&Bgr",self)
         self.ThgAction=QAction("&Thresholding",self)
         self.HmEnAction=QAction("&Histogram Equalization",self)
@@ -104,13 +143,13 @@ class Window(QMainWindow):
         self.FVAction=QAction("&水平翻轉(Vertically)",self)
         self.FLAction=QAction("&向左翻轉(Left)",self)
         self.FRAction=QAction("&向右翻轉(Right)",self)
-        self.ATAction=QAction("&訪射轉換(Affine)",self)
+        self.ATAction=QAction("&仿射轉換(Affine)",self)
         self.MFAction=QAction("&均值濾波(Mean Filtering)",self)
         self.GFAction=QAction("&高斯濾波(Gaussian Filtering)",self)
         self.MBAction=QAction("&中值濾波(MedianBlur)",self)
         self.BFAction=QAction("&雙邊濾波(Bilateral filter)",self)
-        self.LPFAction=QAction("&低通濾波(Low-Pass Filter)",self)
-        self.HPFAction=QAction("&高通濾波(High-Pass Filter)",self)
+        #self.LPFAction=QAction("&低通濾波(Low-Pass Filter)",self)
+        #self.HPFAction=QAction("&高通濾波(High-Pass Filter)",self)
         self.AGNFAction=QAction("&增加高斯噪點(Add gaussian noise)",self)
         self.SFAction=QAction("&索伯算子(Sobel filter)",self)
         self.LFAction=QAction("&拉普拉斯算子(Laplacian filter)",self)
@@ -121,6 +160,7 @@ class Window(QMainWindow):
         self.EIction=QAction("&影像浮雕(Emboss Image)",self)
         self.RIction=QAction("&Result Image",self)
         self.CSction=QAction("&改變大小",self)
+        self.PTction=QAction("&透視投影轉換(Perspective Transform)",self)
 
     def _createMenuBar(self): #選單設定
         menuBar=self.menuBar()
@@ -137,23 +177,24 @@ class Window(QMainWindow):
         IeHmActionMenu.addAction(self.grayAction)
         IeHmActionMenu.addAction(self.hsvAction)
         IeHmActionMenu.addAction(self.bgrAction)
-        IeHmActionMenu.addAction(self.rgbAction)
+        #IeHmActionMenu.addAction(self.rgbAction)
         RotateActionMenu=SettingMenu.addMenu("&旋轉(Rotate)")#旋轉選單
         RotateActionMenu.addAction(self.FHAction)#水平
         RotateActionMenu.addAction(self.FVAction)#垂直
         RotateActionMenu.addAction(self.FLAction)#翻轉90度
         RotateActionMenu.addAction(self.FRAction)#翻轉270度
         SettingMenu.addAction(self.TLAction)#平移
-        SettingMenu.addAction(self.ATAction)#訪射轉換
+        SettingMenu.addAction(self.ATAction)#仿射轉換
         SettingMenu.addAction(self.CSction)
+        SettingMenu.addAction(self.PTction)
      
 
         ImageMenu=menuBar.addMenu("&Image Processing")
         ImageMenu.addAction(self.ThgAction)
         ImageMenu.addAction(self.HmEnAction)
         FilteringActionMenu=ImageMenu.addMenu("&濾波(Filtering)")
-        FilteringActionMenu.addAction(self.LPFAction)
-        FilteringActionMenu.addAction(self.HPFAction)
+        #FilteringActionMenu.addAction(self.LPFAction)
+        #FilteringActionMenu.addAction(self.HPFAction)
         FilteringActionMenu.addAction(self.MFAction)
         FilteringActionMenu.addAction(self.GFAction)
         FilteringActionMenu.addAction(self.MBAction)
@@ -174,7 +215,7 @@ class Window(QMainWindow):
         self.IeHmAction.triggered.connect(self.Histogram)
         self.grayAction.triggered.connect(self.Gray_control)
         self.hsvAction.triggered.connect(self.Hsv_control)
-        self.rgbAction.triggered.connect(self.Rgb_control)
+        #self.rgbAction.triggered.connect(self.Rgb_control)
         self.bgrAction.triggered.connect(self.Bgr_control)
         self.ThgAction.triggered.connect(self.Thresholdingcontrol)
         self.HmEnAction.triggered.connect(self.Histogram_Equalization_control)
@@ -185,8 +226,8 @@ class Window(QMainWindow):
         self.FRAction.triggered.connect(self.pictureFRflip)
         self.FLAction.triggered.connect(self.pictureFLflip)
         self.TLAction.triggered.connect(self.PictureTranslation)
-        self.LPFAction.triggered.connect(self.Low_Pass_Filter)
-        self.HPFAction.triggered.connect(self.High_Pass_Filter)
+        #self.LPFAction.triggered.connect(self.Low_Pass_Filter)
+        #self.HPFAction.triggered.connect(self.High_Pass_Filter)
         self.MFAction.triggered.connect(self.Mean_Filtering)
         self.GFAction.triggered.connect(self.Gaussia_Filtering)
         self.MBAction.triggered.connect(self.MedianBlur)
@@ -195,9 +236,12 @@ class Window(QMainWindow):
         self.SFAction.triggered.connect(self.sobel_filter)
         self.LFAction.triggered.connect(self.laplacian_filter)
         self.AFAction.triggered.connect(self.averaging_filter)
+        self.ATAction.triggered.connect(self.AffineTransform)
         self.EIction.triggered.connect(self.Emboss_Image)
         self.EDIction.triggered.connect(self.Edge_Detection_Image)
-        self.CSction.triggered.connect(self.changesize) 
+        self.CSction.triggered.connect(self.changesize)
+        self.PTction.triggered.connect(self.Perspective_transform)
+        self.RIction.triggered.connect(self.Result_Image)
 
     def openSlot(self): #載入的圖片
         filename, _ = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
@@ -239,13 +283,13 @@ class Window(QMainWindow):
         self.picturelabe2.setPixmap(QPixmap.fromImage(self.qImg))
         self.picturelabe2.resize(self.qImg.size())
     
-    def Rgb_control(self): #Rgb
-        rgb = cv.cvtColor(self.img, cv.COLOR_BGR2RGB)
-        height, width, channel = rgb.shape
-        bytesPerline = 3 * width
-        self.qImg = QImage(rgb, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe2.setPixmap(QPixmap.fromImage(self.qImg))
-        self.picturelabe2.resize(self.qImg.size())
+    # def Rgb_control(self): #Rgb
+    #     rgb = cv.cvtColor(self.img, cv.COLOR_BGR2RGB)
+    #     height, width, channel = rgb.shape
+    #     bytesPerline = 3 * width
+    #     self.qImg = QImage(rgb, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+    #     self.picturelabe2.setPixmap(QPixmap.fromImage(self.qImg))
+    #     self.picturelabe2.resize(self.qImg.size())
 
     def Bgr_control(self): #Bgr
         bgr = cv.cvtColor(self.img, cv.COLOR_RGB2BGR)
@@ -361,16 +405,16 @@ class Window(QMainWindow):
         cv.imshow("original", img)
         cv.imshow("Translation", dst)
     
-    def Low_Pass_Filter(self):
-        img = cv.imread(self.img_path)
-        #self.showpicturea(g_hpf,img)
+    # def Low_Pass_Filter(self):
+    #     img = cv.imread(self.img_path)
+    #     #self.showpicturea(g_hpf,img)
 
-    def High_Pass_Filter(self):
-        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
-        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        GBlur=cv.GaussianBlur(img_gray,(5,5),0)
-        g_hpf=img_gray-GBlur
-        self.showpicturea(g_hpf,img)
+    # def High_Pass_Filter(self):
+    #     img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+    #     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    #     GBlur=cv.GaussianBlur(img_gray,(5,5),0)
+    #     g_hpf=img_gray-GBlur
+    #     self.showpicturea(g_hpf,img)
 
     def Mean_Filtering(self):#均值濾波 blur() boxFilter()
         img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
@@ -469,9 +513,55 @@ class Window(QMainWindow):
     def changesize(self):
         img = cv.imread(self.img_path)
         rows, cols, ch = img.shape
-        img_res = cv.resize(img, None, fx=(float(self.Txtextbox.text())), fy=(float(self.Tytextbox.text())), interpolation=cv.INTER_CUBIC)
+        img_res = cv.resize(img, None, fx=(float(self.Sizextextbox.text())), fy=(float(self.Sizeytextbox.text())), interpolation=cv.INTER_CUBIC)
         cv.imshow('resize image', img_res)
-    
+
+    def AffineTransform(self):
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        rows, cols, ch = img.shape
+        pts1 = np.float32([[50, 50], [200, 50], [50, 200]])
+        pts2 = np.float32([[int(self.affinex1textbox.text()), int(self.affiney1textbox.text())], [int(self.affinex2textbox.text()), int(self.affiney2textbox.text())], [int(self.affinex3textbox.text()), int(self.affiney3textbox.text())]])
+        M = cv.getAffineTransform(pts1, pts2)
+        img_aff = cv.warpAffine(img, M, (cols, rows))
+        cv.imshow('affine image', img_aff)
+
+    def OnMouseAction(self,event,x,y,flags,param):
+        global refPT,cropping,num
+        refPT=[(x,y)]
+        if event==cv.EVENT_LBUTTONDOWN:
+            refPT.append((x, y))
+            if num<4:
+                refPTx[num]=x
+                refPTy[num]=y
+            print(str(refPT)+str(num)+' '+str(refPTx[num])+" "+str(refPTy[num]))
+            num=num+1
+            cropping = True  
+        elif event == cv.EVENT_LBUTTONUP:
+            cropping = False
+            
+
+    def Perspective_transform(self):
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        cv.namedWindow("Perspective")
+        cv.setMouseCallback("Perspective", self.OnMouseAction)
+        while True:
+            cv.imshow("Perspective",img)
+            key = cv.waitKey(1) & 0xFF
+            if key==ord("c"):
+                break
+            
+        pts1=np.float32([[refPTx[0],refPTy[0]],[refPTx[1],refPTy[1]],[refPTx[2],refPTy[2]],[refPTx[3],refPTy[3]]])
+        pts2=np.float32([[0,0],[300,0],[300,300],[0,300]])
+        M=cv.getPerspectiveTransform(pts1,pts2)
+        dst=cv.warpPerspective(img,M,(300,300))
+        cv.imshow('Perspective',dst)
+        # i=0
+        # while i<4:
+        #     refPTx[i]=0
+        #     refPTy[i]=0
+
 if __name__=="__main__":
     app=QApplication(sys.argv)
     win=Window()

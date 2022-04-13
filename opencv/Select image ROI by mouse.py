@@ -7,21 +7,15 @@ refPt = []
 cropping = False
 
 def click_and_crop(event, x, y, flags, param):
-    # grab references to the global variables
     global refPt, cropping
-    # if the left mouse button was clicked, record the starting
-    # (x, y) coordinates and indicate that cropping is being
-    # performed
     if event == cv.EVENT_LBUTTONDOWN:
         refPt = [(x, y)]
         cropping = True
-    # check to see if the left mouse button was released
+        print(refPt)
     elif event == cv.EVENT_LBUTTONUP:
-        # record the ending (x, y) coordinates and indicate that
-        # the cropping operation is finished
         refPt.append((x, y))
         cropping = False
-        # draw a rectangle around the region of interest
+        print(str(refPt[0])+str(refPt[1])+' '+str(refPt[0][1]))
         cv.rectangle(image, refPt[0], refPt[1], (0, 255, 0), 2)
         cv.imshow("image", image)
 
@@ -30,19 +24,13 @@ image = cv.imread('opencv\cameraman.png')
 clone = image.copy()
 cv.namedWindow("image")
 cv.setMouseCallback("image", click_and_crop)
-# keep looping until the 'q' key is pressed
 while True:
-    # display the image and wait for a keypress
     cv.imshow("image", image)
     key = cv.waitKey(1) & 0xFF
-    # if the 'r' key is pressed, reset the cropping region
     if key == ord("r"):
         image = clone.copy()
-    # if the 'c' key is pressed, break from the loop
     elif key == ord("c"):
         break
-# if there are two reference points, then crop the region of interest
-# from teh image and display it
 if len(refPt) == 2:
     roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
     cv.imshow("ROI", roi)

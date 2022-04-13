@@ -5,11 +5,12 @@ import cv2 as cv
 from cv2 import QT_CHECKBOX
 import numpy as np
 from matplotlib import pyplot as plt
-from PyQt5.QtCore import *#QRect,Qt
-from PyQt5.QtWidgets import * #QApplication, QMainWindow,QMenu,QFileDialog,QAction,QLabel, QGridLayout,QSlider,QMessageBox
-from PyQt5.QtGui import *#QImage, QPixmap
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import * 
+from PyQt5.QtGui import *
 from pyrsistent import PTypeError
 from scipy.misc import electrocardiogram
+from scipy import ndimage
 
 class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
@@ -345,11 +346,13 @@ class Window(QMainWindow):
         self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
 
     def High_Pass_Filter(self):
-        img = cv.imread(self.img_path)
-        height, width, channel = img.shape
-        bytesPerline = 3 * width
-        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+        kernel_3x3=np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]])
+        kernel_5x5=np.array([[-1,-1,-1,-1,-1],[-1,1,2,1,-1],[-1,2,4,2,-1],[-1,1,2,1,-1],[-1,-1,-1,-1,-1]])
+        img = cv.imread(self.img_path,cv.COLOR_BGR2GRAY)
+        k3=ndimage.convolve(img,kernel_3x3)
+        k5=ndimage.convolve(img,kernel_5x5)
+        cv.imshow("kernel 3x3",k3)
+        cv.imshow("kernel 5x5",k5)
 
     def Mean_Filtering(self):#均值濾波 blur() boxFilter()
         img = cv.imread(self.img_path)
@@ -359,7 +362,6 @@ class Window(QMainWindow):
         img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
         self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
         
-    
     def Gaussia_Filtering(self):#高斯濾波
         img = cv.imread(self.img_path)
         height, width, channel = img.shape

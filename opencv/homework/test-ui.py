@@ -14,7 +14,7 @@ from scipy.misc import electrocardiogram
 class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
         super().__init__(parent)
-        self.setWindowTitle("test")
+        self.setWindowTitle("4a830212_opencv_homework")
         self.resize(1000,800)
         self.intUI()
         self._createActions() 
@@ -25,28 +25,63 @@ class Window(QMainWindow):
         self.picturelabel = QLabel('picture',self)
         self.picturelabel.move(100,100)
         self.picturelabel.setGeometry(QRect(0, 0, 600, 400))
-        self.picturelabe2 = QLabel('gary',self)
+
+        self.picturelabe2 = QLabel('IeHmAction',self)
         self.picturelabe2.move(100,100)
         self.picturelabe2.setGeometry(QRect(300,100, 600, 400))
-        self.picturelabe3 = QLabel('test',self)
+
+        self.picturelabe3 = QLabel('Thresholding',self)
         self.picturelabe3.move(100,100)
         self.picturelabe3.setGeometry(QRect(0, 350, 600, 400))
+
+        self.picturelabe4 = QLabel('filter',self)
+        self.picturelabe4.move(100,100)
+        self.picturelabe4.setGeometry(QRect(300, 280, 600, 400))
+
         self.sld=QSlider(Qt.Horizontal,self)
         self.sld.setGeometry(50,600,150,50)
         self.sld.setMinimum(0)
         self.sld.setMaximum(255)
         self.sld.setTickPosition(QSlider.TicksRight)
+
         self.sldvaluelabel=QLabel("0",self)
         self.sldvaluelabel.move(100,100)
         self.sldvaluelabel.setGeometry(QRect(25, 600, 50, 50))
+
         self.sld1=QSlider(Qt.Horizontal,self)
         self.sld1.setGeometry(250,600,200,50)
         self.sld1.setMinimum(-360)
         self.sld1.setMaximum(360)
         self.sld1.setTickPosition(QSlider.TicksRight)
+
         self.sldvaluelabel1=QLabel("0",self)
         self.sldvaluelabel1.move(100,100)
         self.sldvaluelabel1.setGeometry(QRect(225, 600, 50, 50))
+
+        self.Txvaluelabel1=QLabel("Tx:",self)
+        self.Txvaluelabel1.move(20, 20)
+        self.Txvaluelabel1.setGeometry(QRect(280, 670, 50, 25))
+
+        self.Txtextbox = QLineEdit(self)
+        self.Txtextbox.move(20, 20)
+        self.Txtextbox.setGeometry(300,670,50,25)
+
+        self.Tyvaluelabel1=QLabel("Ty:",self)
+        self.Tyvaluelabel1.move(20, 20)
+        self.Tyvaluelabel1.setGeometry(QRect(280, 700, 50, 25))
+
+        self.Tytextbox = QLineEdit(self)
+        self.Tytextbox.move(20, 20)
+        self.Tytextbox.setGeometry(300,700,50,25)
+
+        self.Sizevaluelabel1=QLabel("圖片縮放:",self)
+        self.Sizevaluelabel1.move(20, 20)
+        self.Sizevaluelabel1.setGeometry(QRect(25, 700, 50, 25))
+
+        self.Sizetextbox = QLineEdit(self)
+        self.Sizetextbox.move(20, 20)
+        self.Sizetextbox.setGeometry(90,700,50,25)
+
         layout = QGridLayout(self)
         layout.addWidget(self.picturelabel, 0, 0, 4, 4)
         layout.addWidget(self.picturelabe2, 0, 0, 4, 4)
@@ -73,6 +108,8 @@ class Window(QMainWindow):
         self.GFAction=QAction("&高斯濾波(Gaussian Filtering)",self)
         self.MBAction=QAction("&中值濾波(MedianBlur)",self)
         self.BFAction=QAction("&雙邊濾波(Bilateral filter)",self)
+        self.LPFAction=QAction("&低通濾波(Low-Pass Filter)",self)
+        self.HPFAction=QAction("&高通濾波(High-Pass Filter)",self)
         self.ReloadAction=QAction("&重新載入(Reload)",self)
         self.TLAction=QAction("&平移(TransLation)",self)
 
@@ -105,6 +142,8 @@ class Window(QMainWindow):
         ImageMenu.addAction(self.ThgAction)
         ImageMenu.addAction(self.HmEnAction)
         FilteringActionMenu=ImageMenu.addMenu("&濾波(Filtering)")#濾波
+        FilteringActionMenu.addAction(self.LPFAction)
+        FilteringActionMenu.addAction(self.HPFAction)
         FilteringActionMenu.addAction(self.MFAction)#均值濾波
         FilteringActionMenu.addAction(self.GFAction)#高斯濾波
         FilteringActionMenu.addAction(self.MBAction)#中值濾波
@@ -112,10 +151,14 @@ class Window(QMainWindow):
 
     def _connectActions(self):#按鍵觸發
         self.OpenImageAction.triggered.connect(self.openSlot)
+        self.InfoAction.triggered.connect(self.pictureinfo)
+        self.ReloadAction.triggered.connect(self.showImage)
         self.ROIAction.triggered.connect(self.Roi_control)
         self.IeHmAction.triggered.connect(self.Histogram)
         self.grayAction.triggered.connect(self.Gray_control)
         self.hsvAction.triggered.connect(self.Hsv_control)
+        self.rgbAction.triggered.connect(self.Rgb_control)
+        self.bgrAction.triggered.connect(self.Bgr_control)
         self.ThgAction.triggered.connect(self.Thresholdingcontrol)
         self.HmEnAction.triggered.connect(self.Histogram_Equalization_control)
         self.sld.valueChanged[int].connect(self.changeValue)
@@ -123,12 +166,14 @@ class Window(QMainWindow):
         self.FHAction.triggered.connect(self.pictureFHflip)
         self.FVAction.triggered.connect(self.pictureFVflip)
         self.FRAction.triggered.connect(self.pictureFRflip)
-        self.FLAction.triggered.connect(self.pictureFRflip)
-        self.ReloadAction.triggered.connect(self.showImage)
+        self.FLAction.triggered.connect(self.pictureFLflip)
         self.TLAction.triggered.connect(self.PictureTranslation)
-        self.InfoAction.triggered.connect(self.pictureinfo)
-        self.rgbAction.triggered.connect(self.Rgb_control)
-        self.bgrAction.triggered.connect(self.Bgr_control)
+        self.HPFAction.triggered.connect(self.Low_Pass_Filter)
+        self.LPFAction.triggered.connect(self.High_Pass_Filter)
+        self.MFAction.triggered.connect(self.Mean_Filtering)
+        self.GFAction.triggered.connect(self.Gaussia_Filtering)
+        self.MBAction.triggered.connect(self.MedianBlur)
+        self.BFAction.triggered.connect(self.Bilateral_filter)
 
     def openSlot(self): #載入的圖片
         filename, _ = QFileDialog.getOpenFileName(self, 'Open Image', 'Image', '*.png *.jpg *.bmp')
@@ -232,7 +277,7 @@ class Window(QMainWindow):
         self.sldvaluelabel1.setText(str(value))
         self.PictureRotaControl()
 
-    def pictureinfo(self):
+    def pictureinfo(self):#圖片資訊
         img = cv.imread(self.img_path)
         size=img.shape
         QMessageBox.information(self,"Picture_info",str(size)+"\n(高度,寬度,像素)")
@@ -284,14 +329,61 @@ class Window(QMainWindow):
         Pictureflip = QImage(Pictureflip.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
         self.picturelabel.setPixmap(QPixmap.fromImage(Pictureflip))
 
-    def PictureTranslation(self):
+    def PictureTranslation(self):#平移
         img = cv.imread(self.img_path)
         rows, cols = img.shape[:2]
-        affine = np.float32([[1, 0, tx], [0, 1, ty]])
+        affine = np.float32([[1, 0, int(self.Txtextbox.text())], [0, 1, int(self.Tytextbox.text())]])
         dst = cv.warpAffine(img, affine, (cols, rows))
-        cv.imshow("原始影像", img)
-        cv.imshow("影像平移", dst)
+        cv.imshow("original", img)
+        cv.imshow("Translation", dst)
 
+    def Low_Pass_Filter(self):
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        bytesPerline = 3 * width
+        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+
+    def High_Pass_Filter(self):
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        bytesPerline = 3 * width
+        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+
+    def Mean_Filtering(self):#均值濾波 blur() boxFilter()
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        img_Mean=cv.blur(img,(5,5))
+        bytesPerline = 3 * width
+        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+        
+    
+    def Gaussia_Filtering(self):#高斯濾波
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        img_Gaussia=cv.GaussianBlur(img,(5,5),5)
+        bytesPerline = 3 * width
+        img_Gaussia = QImage(img_Gaussia.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Gaussia))
+    
+    def MedianBlur(self):#中值濾波
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        bytesPerline = 3 * width
+        img_Mean = QImage(img_Mean.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Mean))
+    
+    def Bilateral_filter(self):
+        img = cv.imread(self.img_path)
+        height, width, channel = img.shape
+        img_Gaussia=cv.GaussianBlur(img,(5,5),9)
+        img_Bilateral=cv.bilateralFilter(img_Gaussia,50,50,50)
+        bytesPerline = 3 * width
+        img_Bilateral = QImage(img_Bilateral.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+        self.picturelabe4.setPixmap(QPixmap.fromImage(img_Bilateral))
+    
 if __name__=="__main__":
     app=QApplication(sys.argv)
     win=Window()

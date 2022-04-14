@@ -27,7 +27,6 @@ class Window(QMainWindow):
         self._createActions() 
         self._createMenuBar() #選單分類
         self._connectActions()
-        global refPTx,refPTy,num
 
     def intUI(self):#設定介面ui
         self.picturelabel = QLabel('picture',self)
@@ -542,6 +541,7 @@ class Window(QMainWindow):
             
 
     def Perspective_transform(self):
+        global num
         img = cv.imread(self.img_path)
         height, width, channel = img.shape
         cv.namedWindow("Perspective")
@@ -557,10 +557,12 @@ class Window(QMainWindow):
         M=cv.getPerspectiveTransform(pts1,pts2)
         dst=cv.warpPerspective(img,M,(300,300))
         cv.imshow('Perspective',dst)
-        # i=0
-        # while i<4:
-        #     refPTx[i]=0
-        #     refPTy[i]=0
+        i=0
+        while i<4:
+            refPTx[i]=0
+            refPTy[i]=0
+            num=0
+            i=i+1
 
 if __name__=="__main__":
     app=QApplication(sys.argv)

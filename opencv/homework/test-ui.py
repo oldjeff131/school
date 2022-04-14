@@ -18,6 +18,7 @@ cropping = False
 refPTx=[0,0,0,0]
 refPTy=[0,0,0,0]
 num=0
+
 class Window(QMainWindow):
     def __init__(self,parent=None): #視窗建立
         super().__init__(parent)

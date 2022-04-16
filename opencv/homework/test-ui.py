@@ -534,7 +534,7 @@ class Window(QMainWindow):
             if num<4:
                 refPTx[num]=x
                 refPTy[num]=y
-            print(str(refPT)+str(num)+' '+str(refPTx[num])+" "+str(refPTy[num]))
+            #print(str(refPT)+str(num)+' '+str(refPTx[num])+" "+str(refPTy[num]))
             num=num+1
             cropping = True  
         elif event == cv.EVENT_LBUTTONUP:
@@ -543,7 +543,6 @@ class Window(QMainWindow):
 
     def Perspective_transform(self):
         img = cv.imread(self.img_path)
-        height, width, channel = img.shape
         cv.namedWindow("Perspective")
         cv.setMouseCallback("Perspective", self.OnMouseAction)
         while True:
@@ -551,7 +550,8 @@ class Window(QMainWindow):
             key = cv.waitKey(1) & 0xFF
             if key==ord("c"):
                 break
-            
+            elif key==ord("r"):
+                break
         pts1=np.float32([[refPTx[0],refPTy[0]],[refPTx[1],refPTy[1]],[refPTx[2],refPTy[2]],[refPTx[3],refPTy[3]]])
         pts2=np.float32([[0,0],[300,0],[300,300],[0,300]])
         M=cv.getPerspectiveTransform(pts1,pts2)

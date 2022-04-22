@@ -1,25 +1,27 @@
 import math
 from math import factorial
-from cv2 import split
 def Gemetric(p):#幾何
     E=int(1/p)
     ans=0.0
     if E<=0:
         return 0
     else:
-        for i in range(1,E):
+        for i in range(1,(E)):
             ans=ans+(p*((1-p)**(i-1)))
             ans=round(ans, 3)
         return ans
+
 def Binomial(n,p): #二項式
     E=int(n*p)
-    ans=0.0
+    n,p=int(n),float(p)
+    ans=0
     while True:
         for i in range(E):
-            mathfactorial=(factorial(n))/(factorial(i))(factorial(n-i))
-            ans=mathfactorial*(p^i)*((1-p)**(n-i))
-            ans=round(ans, 3)
+            mathGemetric=(p**i)*((1-p)**(n-i))
+            mathfactorial=(factorial(n))/((factorial(i))*(factorial(n-i)))
+            ans=ans+(mathfactorial*mathGemetric)
         break
+    ans=round(ans, 3)
     return ans
 
 def Discrete_Uniform(K,l):#離散
@@ -70,6 +72,8 @@ if __name__ == '__main__':
 def test_Discrete_Uniform():
     assert Discrete_Uniform(0,6)==0.429
 def test_Gemetric():
-    assert Gemetric(0.3333333)==0.556
+    assert Gemetric(0.333333333)==0.555
 def test_Poisson():
     assert Poisson(3)==0.423
+def test_Binomial():
+    assert Binomial(6,0.5)==0.344

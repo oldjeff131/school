@@ -1,0 +1,88 @@
+﻿<Window x:Class="Paint.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Paint"
+    mc:Ignorable="d" 
+    Title="4a830212" Height="750" Width="1250" Loaded="Window_Loaded">
+    <StackPanel HorizontalAlignment="Left" Height="721" VerticalAlignment="Top" Width="1246">
+        <Menu Height="18" Margin="0,0,2,0">
+            <MenuItem Header="檔案">
+                <MenuItem Header="清除畫布" Click="clearbutton_Click"/>
+                <MenuItem Header="儲存畫布" Click="MenuItem_Click" />
+            </MenuItem>
+            <MenuItem Header="色彩">
+                <MenuItem Header="筆刷顏色" Click="colorbutton_Click"/>
+                <MenuItem Header="內部顏色" Click="Fillcolorbutton_Click" />
+                <MenuItem Header="筆刷大小" >
+                    <Slider x:Name="sl1" Height="22" Width="153" Margin="0,5,0,0" HorizontalAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="0.495,0.45" Minimum="1" ValueChanged="sliderthinkness_ValueChanged"/>
+                    <Label x:Name="lb1" Content="" VerticalAlignment="Center" Margin="0,0,0,0" Height="30" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="42"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="工具">
+                <RadioButton Content="Line" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                <RadioButton Content="Ellipse" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                <RadioButton Content="Rectangle" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                <RadioButton Content="FreeLine" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                <RadioButton Content="Eraser" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+            </MenuItem>
+        </Menu>
+        <ToolBarTray Height="96" Margin="0,0,2,0">
+            <ToolBar x:Name="ColorToolBar" Height="95" HorizontalAlignment="Left" VerticalAlignment="Top" Width="491" Margin="0,0,-14,0">
+                <Button x:Name="colorbutton" Content="筆刷色彩" VerticalAlignment="Top" Width="100" Click="colorbutton_Click" Margin="0,0,0,-5" Height="95" HorizontalAlignment="Center" Background= "Red"/>
+                <Button x:Name="Fillcolorbutton" Content="內部顏色" Height="95" VerticalAlignment="Top" Width="100" Margin="0,0,0,-5" Click="Fillcolorbutton_Click" Background= "#FFE8FF00"/>
+                <Label Content="畫筆粗細" Height="75" VerticalAlignment="Center" RenderTransformOrigin="0.46,1.009" Width="64" Margin="0,10,0,5" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                <Slider x:Name="sl2" Height="22" VerticalAlignment="Top" Width="153" Margin="0,36,0,0" HorizontalAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="0.495,0.45" Minimum="1" ValueChanged="sliderthinkness_ValueChanged"/>
+                <Label x:Name="lb2" Content="" VerticalAlignment="Center" Margin="0,12,0,2" Height="54" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="42"/>
+            </ToolBar>
+            <ToolBar x:Name="ShapeToolBar" HorizontalAlignment="Left" Height="95" VerticalAlignment="Top" Width="477" Margin="14,0,-467,0">
+                <Label Content="圖形" Height="95" VerticalAlignment="Center" Width="48" HorizontalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0,0,0,-5"/>
+                <RadioButton x:Name="linebutton" Content="Line" Height="95" VerticalAlignment="Top" Width="80" GroupName="ShapeGroup" Click="shapebutton_Chick" Margin="0,0,0,-5"/>
+                <RadioButton x:Name="ellipsebutton" Content="Ellipse" Height="95" VerticalAlignment="Top" Width="80" GroupName="ShapeGroup" Click="shapebutton_Chick" Margin="0,0,0,-5"/>
+                <RadioButton x:Name="rectanglebutton" Content="Rectangle" Height="95" VerticalAlignment="Top" Width="80" GroupName="ShapeGroup" Click="shapebutton_Chick" Margin="0,0,0,-5"/>
+                <RadioButton x:Name="freelinebutton" Content="Freeline" Height="95" VerticalAlignment="Top" Width="80" GroupName="ShapeGroup" Click="shapebutton_Chick" Margin="0,0,0,-5"/>
+                <RadioButton x:Name="erasebutton" Content="Erase" Height="95" VerticalAlignment="Top" Width="80" GroupName="ShapeGroup" Margin="0,0,0,0" Click="erasebutton_Click" />
+            </ToolBar>
+            <ToolBar x:Name="ActionToolBar" Margin="470,1,-590,-1" RenderTransformOrigin="0.5,0.5">
+                <ToolBar.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.463"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </ToolBar.RenderTransform>
+                <Button x:Name="clearbutton" Content="清除" VerticalAlignment="Stretch" Width="69" Click="clearbutton_Click" Margin="0,10,0,5"/>
+            </ToolBar>
+        </ToolBarTray>
+        <Canvas x:Name="canvas" HorizontalAlignment="Left" Height="579" Width="1240" Background= "#FFFFE3FA" MouseMove="canvas_MouseMove" MouseLeftButtonDown="Canvas_MouseDown" MouseLeftButtonUp="canvas_MouseUp" VerticalAlignment="Top">
+            <Canvas.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="檔案">
+                        <MenuItem Header="清除畫布" Click="clearbutton_Click"/>
+                        <MenuItem Header="儲存畫布" />
+                    </MenuItem>
+                    <MenuItem Header="色彩">
+                        <MenuItem Header="筆刷顏色" Click="colorbutton_Click"/>
+                        <MenuItem Header="內部顏色" Click="Fillcolorbutton_Click" />
+                        <MenuItem Header="筆刷大小" Click="MenuItem_Click" >
+                            <Slider x:Name="sl3" Height="20" VerticalAlignment="Top" Width="150" Margin="0,5,0,0" HorizontalAlignment="Center" HorizontalContentAlignment="Center" RenderTransformOrigin="0.495,0.45" Minimum="1" ValueChanged="sliderthinkness_ValueChanged"/>
+                            <Label x:Name="lb3" Content="" VerticalAlignment="Center" Margin="0,0,0,0" Height="30" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="42"/>
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="工具">
+                        <RadioButton Content="Line" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                        <RadioButton Content="Ellipse" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                        <RadioButton Content="Rectangle" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                        <RadioButton Content="FreeLine" GroupName="ShapeGroup"  Click="shapebutton_Chick"/>
+                        <RadioButton Content="Eraser" GroupName="ShapeGroup" Click="shapebutton_Chick"/>
+                    </MenuItem>
+                </ContextMenu>
+            </Canvas.ContextMenu>
+        </Canvas>
+        <StatusBar Height="35" Margin="0,0,2,0">
+            <Label x:Name="xylabel" Content="Label" Width="536" Height="31" VerticalContentAlignment="Center" Margin="700,0,0,0"/>
+        </StatusBar>
+    </StackPanel>
+</Window>

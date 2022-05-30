@@ -38,3 +38,6 @@ for i in range(n): #排序後的顯示
 print("快速排序總使用時間:")
 end = time.perf_counter()#結束時間
 print(end - start)
+
+
+	
